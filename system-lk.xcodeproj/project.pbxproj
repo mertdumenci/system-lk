@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		41A54A9F1F636F17007642CC /* Prover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41A54A9E1F636F17007642CC /* Prover.swift */; };
+		41DBEAD61F632F6600E88438 /* Inference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41DBEAD51F632F6600E88438 /* Inference.swift */; };
+		41DBEAD81F63314B00E88438 /* Sequent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41DBEAD71F63314A00E88438 /* Sequent.swift */; };
+		41DBEADA1F63317C00E88438 /* Proposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41DBEAD91F63317C00E88438 /* Proposition.swift */; };
 		41E131841F63189500A04939 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E131831F63189500A04939 /* main.swift */; };
 /* End PBXBuildFile section */
 
@@ -23,6 +27,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		41A54A9E1F636F17007642CC /* Prover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Prover.swift; sourceTree = "<group>"; };
+		41DBEAD51F632F6600E88438 /* Inference.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Inference.swift; sourceTree = "<group>"; };
+		41DBEAD71F63314A00E88438 /* Sequent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sequent.swift; sourceTree = "<group>"; };
+		41DBEAD91F63317C00E88438 /* Proposition.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Proposition.swift; sourceTree = "<group>"; };
 		41E131801F63189500A04939 /* system-lk */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "system-lk"; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E131831F63189500A04939 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -58,6 +66,10 @@
 			isa = PBXGroup;
 			children = (
 				41E131831F63189500A04939 /* main.swift */,
+				41A54A9E1F636F17007642CC /* Prover.swift */,
+				41DBEAD91F63317C00E88438 /* Proposition.swift */,
+				41DBEAD71F63314A00E88438 /* Sequent.swift */,
+				41DBEAD51F632F6600E88438 /* Inference.swift */,
 			);
 			path = "system-lk";
 			sourceTree = "<group>";
@@ -121,6 +133,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				41E131841F63189500A04939 /* main.swift in Sources */,
+				41DBEAD61F632F6600E88438 /* Inference.swift in Sources */,
+				41A54A9F1F636F17007642CC /* Prover.swift in Sources */,
+				41DBEADA1F63317C00E88438 /* Proposition.swift in Sources */,
+				41DBEAD81F63314B00E88438 /* Sequent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

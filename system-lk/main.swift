@@ -8,5 +8,16 @@
 
 import Foundation
 
-print("Hello, World!")
+// Principium tertii exclusi.
+// x \lor \not{x}
+let sequent = Sequent(
+    antecedents: [],
+    consequents: [
+        .Disjunction(
+            .Atomic("x"),
+            .Negation(.Atomic("x"))
+        )
+    ])
+
+print(sequent)
 
