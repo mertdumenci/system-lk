@@ -8,9 +8,31 @@
 
 import Foundation
 
+// Redundant antecedents.
+// x, x ⊢ x
+let redundantAntecedents = Sequent(
+    antecedents: [.Atomic("x"), .Atomic("x")],
+    consequents: [.Atomic("x")]
+)
+
+print("Solving \(redundantAntecedents)")
+print(prove(sequent: redundantAntecedents) ?? "No proof steps")
+print("--")
+
+// Unconditional tautology
+// x, !x ⊢
+let unconditionalTautology = Sequent(
+    antecedents: [.Atomic("x"), .Negation(.Atomic("x"))],
+    consequents: []
+)
+
+print("Solving \(unconditionalTautology)")
+print(prove(sequent: unconditionalTautology) ?? "No proof steps")
+print("--")
+
 // Principium tertii exclusi.
 // x \lor \not{x}
-let sequent = Sequent(
+let lawOfTheExcludedMiddle = Sequent(
     antecedents: [],
     consequents: [
         .Disjunction(
@@ -19,5 +41,5 @@ let sequent = Sequent(
         )
     ])
 
-print(sequent)
-
+print("Solving \(lawOfTheExcludedMiddle)")
+print("--")

@@ -31,3 +31,14 @@ indirect enum Inference {
     case Branch(Inference, Inference, InferenceRule, Sequent)
 }
 
+// Very bad description method.
+extension Inference: CustomStringConvertible {
+    var description: String {
+        switch(self) {
+        case .Linear(let i, let r, let s):
+            return "\(i?.description ?? "None")\n(\(r))\n\(s)"
+        case .Branch(_, _, _, _):
+            return "Unsupported."
+        }
+    }
+}
