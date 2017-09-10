@@ -8,12 +8,48 @@
 
 import Foundation
 
+typealias PropositionList = [Proposition]
+
 indirect enum Proposition {
     case Atomic(String)
     case Negation(Proposition)
     case Conjunction(Proposition, Proposition)
     case Disjunction(Proposition, Proposition)
     case Conditional(Proposition, Proposition)
+}
+
+extension Proposition {
+    var isNegation: Bool {
+        if case .Negation = self {
+            return true
+        }
+        
+        return false
+    }
+    
+    var isConjunction: Bool {
+        if case .Conjunction = self {
+            return true
+        }
+        
+        return false
+    }
+    
+    var isDisjunction: Bool {
+        if case .Disjunction = self {
+            return true
+        }
+        
+        return false
+    }
+    
+    var isConditional: Bool {
+        if case .Conditional = self {
+            return true
+        }
+        
+        return false
+    }
 }
 
 extension Proposition: Equatable {

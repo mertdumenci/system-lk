@@ -31,7 +31,6 @@ indirect enum Inference {
     case Branch(Inference, Inference, InferenceRule, Sequent)
 }
 
-// Very bad description method.
 extension Inference: CustomStringConvertible {
     var description: String {
         switch(self) {
