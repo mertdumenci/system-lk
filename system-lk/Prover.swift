@@ -13,7 +13,7 @@ typealias Proof = Inference
 /**
  * Takes the set difference of `left` and `right`.
  */
-func -(left: PropositionList, right: PropositionList) -> PropositionList? {
+fileprivate func -(left: PropositionList, right: PropositionList) -> PropositionList? {
     if left.count == 0 || right.count == 0 {
         return nil
     }
@@ -29,14 +29,14 @@ func -(left: PropositionList, right: PropositionList) -> PropositionList? {
 }
 
 /**
- * Attempts to prove a sequent.
+ * Attempts to prove a sequent. (Might return an incomplete proof.)
  *
  * Applies the inference rules bottom-up in a backwards manner, trying to reach an
  * axiomatic sequent. If it can find one, the sequent is proven since one can
  * apply the same inference rules in top-down order and reach the initial sequent
  * from an axiom.
  */
-func prove(sequent: Sequent) -> Proof? {
+fileprivate func tryProve(sequent: Sequent) -> Proof? {
     var antecedents = sequent.antecedents
     var consequents = sequent.consequents
     
@@ -65,7 +65,7 @@ func prove(sequent: Sequent) -> Proof? {
             antecedents: antecedents,
             consequents: consequents
         )
-    
+        
         // Intuition: If Γ concludes Δ, then Γ and A also concludes Δ.
         //
         //     Γ ⊢ Δ
@@ -73,14 +73,14 @@ func prove(sequent: Sequent) -> Proof? {
         //    Γ, A ⊢ Δ
         //
         return .Linear(
-            prove(sequent: inferredFrom),
+            tryProve(sequent: inferredFrom),
             .WeakeningLeft,
             sequent
         )
     }
     
     // Try to apply the `WeakeningRight` inference rule bottom-up.
-    if let difference = consequents - antecedents, 
+    if let difference = consequents - antecedents,
         difference != consequents {
         // Since we're applying the inference rule bottom-up, we need to strengthen
         // the consequents as we know that it's weakened (consequents - antecedents ≠ ∅)
@@ -98,7 +98,7 @@ func prove(sequent: Sequent) -> Proof? {
         //    Γ ⊢ A, Δ
         //
         return .Linear(
-            prove(sequent: inferredFrom),
+            tryProve(sequent: inferredFrom),
             .WeakeningRight,
             sequent
         )
@@ -111,7 +111,7 @@ func prove(sequent: Sequent) -> Proof? {
         guard case let .Negation(prop) = antecedents[index] else {
             fatalError("Prover hit error state.")
         }
-
+        
         antecedents.remove(at: index)
         consequents.append(prop)
         
@@ -128,7 +128,7 @@ func prove(sequent: Sequent) -> Proof? {
         //   Γ, ¬A ⊢ Δ
         //
         return .Linear(
-            prove(sequent: inferredFrom),
+            tryProve(sequent: inferredFrom),
             .NotLeft,
             sequent
         )
@@ -157,7 +157,7 @@ func prove(sequent: Sequent) -> Proof? {
         //   Γ ⊢ ¬A, Δ
         //
         return .Linear(
-            prove(sequent: inferredFrom),
+            tryProve(sequent: inferredFrom),
             .NotRight,
             sequent
         )
@@ -187,7 +187,7 @@ func prove(sequent: Sequent) -> Proof? {
         // Γ, (A ∧ B) ⊢ Δ
         //
         return .Linear(
-            prove(sequent: inferredFrom),
+            tryProve(sequent: inferredFrom),
             .AndLeft,
             sequent
         )
@@ -217,7 +217,7 @@ func prove(sequent: Sequent) -> Proof? {
         // Γ ⊢ (A ∨ B), Δ
         //
         return .Linear(
-            prove(sequent: inferredFrom),
+            tryProve(sequent: inferredFrom),
             .OrRight,
             sequent
         )
@@ -248,7 +248,7 @@ func prove(sequent: Sequent) -> Proof? {
         // Γ ⊢ (A → B), Δ
         //
         return .Linear(
-            prove(sequent: inferredFrom),
+            tryProve(sequent: inferredFrom),
             .ImpliesRight,
             sequent
         )
@@ -285,8 +285,8 @@ func prove(sequent: Sequent) -> Proof? {
         //     Γ, Σ, (A ∨ B) ⊢ Δ, Π
         //
         return .Branch(
-            prove(sequent: leftSequent),
-            prove(sequent: rightSequent),
+            tryProve(sequent: leftSequent),
+            tryProve(sequent: rightSequent),
             .OrLeft,
             sequent
         )
@@ -323,8 +323,8 @@ func prove(sequent: Sequent) -> Proof? {
         //     Γ, Σ ⊢ (A ∧ B), Δ, Π
         //
         return .Branch(
-            prove(sequent: leftSequent),
-            prove(sequent: rightSequent),
+            tryProve(sequent: leftSequent),
+            tryProve(sequent: rightSequent),
             .AndRight,
             sequent
         )
@@ -360,12 +360,52 @@ func prove(sequent: Sequent) -> Proof? {
         //     Γ, Σ, (A → B) ⊢ Δ, Π
         //
         return .Branch(
-            prove(sequent: leftSequent),
-            prove(sequent: rightSequent),
+            tryProve(sequent: leftSequent),
+            tryProve(sequent: rightSequent),
             .ImpliesLeft,
             sequent
         )
     }
     
     return nil
+}
+
+/**
+ * Checks if a given proof attempt is complete/successful.
+ */
+func checkCompleteness(maybeProof: Proof?) -> Bool {
+    guard let maybeProof = maybeProof else {
+        return false
+    }
+    
+    // Checks if the first inference rule[s] (top-down) are `Identity`.
+    // If not, the prover couldn't prove `sequent`.
+    switch (maybeProof) {
+    case let .Linear(i, r, _):
+        if case .Identity = r {
+            return true
+        }
+        
+        return checkCompleteness(maybeProof: i)
+    case let .Branch(il, ir, r, _):
+        if case .Identity = r {
+            return true
+        }
+        
+        return checkCompleteness(maybeProof: il)
+            || checkCompleteness(maybeProof: ir)
+    }
+}
+
+/**
+ * Attempts to prove a sequent. Wraps around `tryProve` to check
+ * for proof completion, and returns `nil` for incomplete proof
+ * attempts.
+ */
+func prove(sequent: Sequent) -> Proof? {
+    // Try to prove `sequent`.
+    let maybeProof = tryProve(sequent: sequent)
+    
+    // Check for the completeness of `maybeProof`.
+    return checkCompleteness(maybeProof: maybeProof) ? maybeProof : nil
 }
