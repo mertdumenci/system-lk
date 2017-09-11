@@ -76,7 +76,7 @@ extension Proposition: CustomStringConvertible {
         case .Atomic(let p):
             return p
         case .Negation(let p):
-            return "¬\(p)"
+            return "¬(\(p))"
         case .Conjunction(let l, let r):
             return "(\(l)) ∧ (\(r))"
         case .Disjunction(let l, let r):

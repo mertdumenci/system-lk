@@ -28,16 +28,29 @@ enum InferenceRule {
 
 indirect enum Inference {
     case Linear(Inference?, InferenceRule, Sequent)
-    case Branch(Inference, Inference, InferenceRule, Sequent)
+    case Branch(Inference?, Inference?, InferenceRule, Sequent)
 }
 
 extension Inference: CustomStringConvertible {
     var description: String {
         switch(self) {
-        case .Linear(let i, let r, let s):
-            return "\(i?.description ?? "None")\n(\(r))\n\(s)"
-        case .Branch(_, _, _, _):
-            return "Unsupported."
+        case let .Linear(i, r, s):
+            return """
+\(i?.description ?? "None")
+(\(r))
+\(s)
+"""
+        case let .Branch(il, ir, r, s):
+            return """
+- (Left Branch)
+\(il?.description ?? "None")
+
+- (Right Branch)
+\(ir?.description ?? "None")
+
+(\(r))
+\(s)
+"""
         }
     }
 }

@@ -55,8 +55,9 @@ func prove(sequent: Sequent) -> Proof? {
     }
     
     // Try to apply the `WeakeningLeft` inference rule bottom-up.
-    if let difference = antecedents - consequents {
-        // Since we're applying the inference rule bottom-up, we need to 'contract'
+    if let difference = antecedents - consequents,
+        difference != antecedents {
+        // Since we're applying the inference rule bottom-up, we need to strengthen
         // the antecedents as we know that it's weakened (antecedents - consequents ≠ ∅)
         antecedents.remove(at: antecedents.index(of: difference.first!)!)
         
@@ -79,8 +80,9 @@ func prove(sequent: Sequent) -> Proof? {
     }
     
     // Try to apply the `WeakeningRight` inference rule bottom-up.
-    if let difference = consequents - antecedents {
-        // Since we're applying the inference rule bottom-up, we need to 'contract'
+    if let difference = consequents - antecedents, 
+        difference != consequents {
+        // Since we're applying the inference rule bottom-up, we need to strengthen
         // the consequents as we know that it's weakened (consequents - antecedents ≠ ∅)
         consequents.remove(at: consequents.index(of: difference.first!)!)
         
@@ -252,6 +254,118 @@ func prove(sequent: Sequent) -> Proof? {
         )
     }
     
+    // Try to apply the `OrLeft` inference rule bottom-up.
+    if let index = antecedents.index(where: { $0.isDisjunction }) {
+        // Unpack the connected propositions.
+        // A ∨ B -> A, B
+        guard case let .Disjunction(a, b) = antecedents[index] else {
+            fatalError("Prover hit error state.")
+        }
+        
+        antecedents.remove(at: index)
+        
+        let leftAntecedents = antecedents + [a]
+        let rightAntecedents = antecedents + [b]
+        
+        let leftSequent = Sequent(
+            antecedents: leftAntecedents,
+            consequents: consequents
+        )
+        
+        let rightSequent = Sequent(
+            antecedents: rightAntecedents,
+            consequents: consequents
+        )
+        
+        // Intuition: If A concludes Δ and B concludes Π,
+        // then A or B concludes Δ or Π.
+        //
+        //  Γ, A ⊢ Δ          Σ, B ⊢ Π
+        // ----------------------------- (∨L)
+        //     Γ, Σ, (A ∨ B) ⊢ Δ, Π
+        //
+        return .Branch(
+            prove(sequent: leftSequent),
+            prove(sequent: rightSequent),
+            .OrLeft,
+            sequent
+        )
+    }
+    
+    // Try to apply the `AndRight` inference rule bottom-up.
+    if let index = consequents.index(where: { $0.isConjunction }) {
+        // Unpack the connected propositions.
+        // A ∧ B -> A, B
+        guard case let .Conjunction(a, b) = consequents[index] else {
+            fatalError("Prover hit error state.")
+        }
+        
+        consequents.remove(at: index)
+        
+        let leftConsequents = consequents + [a]
+        let rightConsequents = consequents + [b]
+        
+        let leftSequent = Sequent(
+            antecedents: antecedents,
+            consequents: leftConsequents
+        )
+        
+        let rightSequent = Sequent(
+            antecedents: antecedents,
+            consequents: rightConsequents
+        )
+        
+        // Intuition: If Γ concludes A and Σ concludes B,
+        // Γ and Σ conclude A and B.
+        //
+        //  Γ ⊢ A, Δ           Σ ⊢ B, Π
+        // ----------------------------- (∧R)
+        //     Γ, Σ ⊢ (A ∧ B), Δ, Π
+        //
+        return .Branch(
+            prove(sequent: leftSequent),
+            prove(sequent: rightSequent),
+            .AndRight,
+            sequent
+        )
+    }
+    
+    // Try to apply the `ImpliesLeft` inference rule bottom-up.
+    if let index = antecedents.index(where: { $0.isConditional }) {
+        // Unpack the connected propositions.
+        // A → B -> A, B
+        guard case let .Conditional(a, b) = antecedents[index] else {
+            fatalError("Prover hit error state.")
+        }
+        
+        antecedents.remove(at: index)
+        
+        let leftConsequents = consequents + [a]
+        let rightAntecedents = antecedents + [b]
+        
+        let leftSequent = Sequent(
+            antecedents: antecedents,
+            consequents: leftConsequents
+        )
+        
+        let rightSequent = Sequent(
+            antecedents: rightAntecedents,
+            consequents: consequents
+        )
+        
+        // Intuition: If we can conclude A, we can assume B.
+        //
+        //  Γ ⊢ A, Δ           Σ, B ⊢ Π
+        // ----------------------------- (→L)
+        //     Γ, Σ, (A → B) ⊢ Δ, Π
+        //
+        return .Branch(
+            prove(sequent: leftSequent),
+            prove(sequent: rightSequent),
+            .ImpliesLeft,
+            sequent
+        )
+    }
     
     return nil
 }

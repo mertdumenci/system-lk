@@ -8,38 +8,61 @@
 
 import Foundation
 
-// Redundant antecedents.
-// x, x ⊢ x
-let redundantAntecedents = Sequent(
-    antecedents: [.Atomic("x"), .Atomic("x")],
-    consequents: [.Atomic("x")]
-)
+func solver(sequents: [Sequent]) -> [Proof?] {
+    return sequents.map { sequent in
+        print("Proving sequent: \(sequent)")
+        let proof = prove(sequent: sequent)
+        print("Proof:")
+        print(proof?.description ?? "No proof found.")
+        print("---")
+        
+        return proof
+    }
+}
 
-print("Solving \(redundantAntecedents)")
-print(prove(sequent: redundantAntecedents) ?? "No proof steps")
-print("--")
+let tautologies = [
+    // x, x ⊢ x
+    Sequent(
+        antecedents: [.Atomic("x"), .Atomic("x")],
+        consequents: [.Atomic("x")]
+    ),
+    // x, !x ⊢
+    Sequent(
+        antecedents: [.Atomic("x"), .Negation(.Atomic("x"))],
+        consequents: []
+    ),
+    // ⊢ x ∨ ¬x
+    Sequent(
+        antecedents: [],
+        consequents: [
+            .Disjunction(
+                .Atomic("x"),
+                .Negation(.Atomic("x"))
+            )
+        ]
+    ),
+    // ¬(p ∧ q) ⊢ ¬p ∨ ¬q
+    Sequent(
+        antecedents: [
+            .Negation(
+                .Conjunction(
+                    .Atomic("p"),
+                    .Atomic("q")
+                )
+            )
+        ],
+        consequents: [
+            .Disjunction(
+                .Negation(
+                    .Atomic("p")
+                ),
+                .Negation(
+                    .Atomic("q")
+                )
+            )
+        ]
+    )
+]
 
-// Unconditional tautology
-// x, !x ⊢
-let unconditionalTautology = Sequent(
-    antecedents: [.Atomic("x"), .Negation(.Atomic("x"))],
-    consequents: []
-)
+let proofs = solver(sequents: tautologies)
 
-print("Solving \(unconditionalTautology)")
-print(prove(sequent: unconditionalTautology) ?? "No proof steps")
-print("--")
-
-// Principium tertii exclusi.
-// x \lor \not{x}
-let lawOfTheExcludedMiddle = Sequent(
-    antecedents: [],
-    consequents: [
-        .Disjunction(
-            .Atomic("x"),
-            .Negation(.Atomic("x"))
-        )
-    ])
-
-print("Solving \(lawOfTheExcludedMiddle)")
-print("--")
